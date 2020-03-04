@@ -15,13 +15,13 @@ int Error(DWORD code) {
 	return code;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
 	if (argc < 3)
 		return PrintUsage();
 
 	// parse process ID
 
-	int pid = std::stoi(argv[1]);
+	int pid = atoi(argv[1]);
 
 	HANDLE hProcess = ::OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, FALSE, pid);
 	if (!hProcess)
@@ -34,8 +34,9 @@ int main(int argc, char* argv[]) {
 	if (!::AssignProcessToJobObject(hJob, hProcess))
 		return Error(::GetLastError());
 
-	JOBOBJECT_CPU_RATE_CONTROL_INFORMATION info = { JOB_OBJECT_CPU_RATE_CONTROL_ENABLE | JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP };
-	info.CpuRate = std::stoi(argv[2]) * 100;
+	JOBOBJECT_CPU_RATE_CONTROL_INFORMATION info;
+	info.ControlFlags = JOB_OBJECT_CPU_RATE_CONTROL_ENABLE | JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP;
+	info.CpuRate = atoi(argv[2]) * 100;
 
 	if (!::SetInformationJobObject(hJob, JobObjectCpuRateControlInformation, &info, sizeof(info)))
 		return Error(::GetLastError());
